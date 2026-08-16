@@ -4,7 +4,7 @@ import { mkdtempForTestSync } from '../../../__tests__/test-utils/tmp-dir.ts';
 
 // ADR 0012 migration step 2: every replay step failure now attempts a
 // post-failure screen digest capture + suggestion re-resolution, both via
-// dispatchCommand('snapshot', ...). None of this file's fixtures model a real
+// the narrow snapshot interactor seam. None of this file's fixtures model a real
 // device runner, so without a mock those calls fall through to the real
 // (slow/hanging) runner dispatch path. Reject fast so failure-path tests keep
 // exercising `divergence.screen: unavailable` deterministically, exactly like
@@ -48,6 +48,10 @@ vi.mock('../../../core/dispatch.ts', async (importOriginal) => {
   };
 });
 
+vi.mock('../snapshot-interactor-capture.ts', () => ({
+  captureSnapshotWithInteractor: vi.fn(),
+}));
+
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -56,7 +60,13 @@ import { PNG } from '../../../utils/png.ts';
 import type { DaemonInvokeFn, DaemonRequest, DaemonResponse } from '../../types.ts';
 import { SessionStore } from '../../session-store.ts';
 import { makeAndroidSession, makeIosSession } from '../../../__tests__/test-utils/index.ts';
+import { captureSnapshotThroughLegacyDispatchFixture } from '../../__tests__/legacy-snapshot-capture-fixture.ts';
+import { captureSnapshotWithInteractor } from '../snapshot-interactor-capture.ts';
 import { runReplayScriptFile } from '../session-replay-runtime.ts';
+
+vi.mocked(captureSnapshotWithInteractor).mockImplementation(
+  captureSnapshotThroughLegacyDispatchFixture,
+);
 
 type CapturedInvocation = {
   command: string;

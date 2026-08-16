@@ -5,6 +5,8 @@ import { makeIosSession } from '../../../__tests__/test-utils/session-factories.
 import { mkdtempForTestSync } from '../../../__tests__/test-utils/tmp-dir.ts';
 import { dispatchCommand } from '../../../core/dispatch.ts';
 import { SessionStore } from '../../session-store.ts';
+import { captureSnapshotThroughLegacyDispatchFixture } from '../../__tests__/legacy-snapshot-capture-fixture.ts';
+import { captureSnapshotWithInteractor } from '../snapshot-interactor-capture.ts';
 import { runReplayScriptFile } from '../session-replay-runtime.ts';
 import { baseReplayRequest, writeReplayFile } from './session-replay-runtime.fixtures.ts';
 
@@ -13,11 +15,18 @@ vi.mock('../../../core/dispatch.ts', async (importOriginal) => {
   return { ...actual, dispatchCommand: vi.fn(), resolveTargetDevice: vi.fn() };
 });
 
+vi.mock('../snapshot-interactor-capture.ts', () => ({
+  captureSnapshotWithInteractor: vi.fn(),
+}));
+
 const mockDispatchCommand = vi.mocked(dispatchCommand);
+const mockCaptureSnapshotWithInteractor = vi.mocked(captureSnapshotWithInteractor);
 
 beforeEach(() => {
   mockDispatchCommand.mockReset();
   mockDispatchCommand.mockRejectedValue(new Error('no device runner available'));
+  mockCaptureSnapshotWithInteractor.mockReset();
+  mockCaptureSnapshotWithInteractor.mockImplementation(captureSnapshotThroughLegacyDispatchFixture);
 });
 
 test('replay executes selector reads before reporting a covered-target divergence', async () => {

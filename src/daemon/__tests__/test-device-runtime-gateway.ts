@@ -14,7 +14,7 @@ import {
 import type { BindDeviceRuntime, BindExactDeviceRuntime } from '../request-runtime-binding.ts';
 import type { DeviceInfo } from '@agent-device/kernel/device';
 import { applicationLifecycleRuntimeFixture } from './application-lifecycle-runtime-fixture.ts';
-import { unavailableDeploymentAndShutdownOperationFacts } from '../../__tests__/test-utils/runtime-operation-facts.ts';
+import { unavailableDeploymentSnapshotAndShutdownOperationFacts } from '../../__tests__/test-utils/runtime-operation-facts.ts';
 
 const unavailable = Object.freeze({
   available: false as const,
@@ -53,7 +53,7 @@ async function lifecycleBindingForTest(device: DeviceInfo) {
           : { iosPhysicalDeviceBackend: device.iosPhysicalDeviceBackend }),
       },
       operations: {
-        ...unavailableDeploymentAndShutdownOperationFacts,
+        ...unavailableDeploymentSnapshotAndShutdownOperationFacts,
         appLogInspect: unavailable,
         appLogDoctor: unavailable,
         appLogStart: unavailable,
@@ -105,7 +105,7 @@ export const unavailableDeviceRuntimeGateway: DeviceRuntimeGateway<PlatformRunti
             : { iosPhysicalDeviceBackend: device.iosPhysicalDeviceBackend }),
         },
         operations: {
-          ...unavailableDeploymentAndShutdownOperationFacts,
+          ...unavailableDeploymentSnapshotAndShutdownOperationFacts,
           appLogInspect: unavailable,
           appLogDoctor: unavailable,
           appLogStart: unavailable,
